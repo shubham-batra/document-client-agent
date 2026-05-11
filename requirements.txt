@@ -1,0 +1,24 @@
+# API Framework
+fastapi
+uvicorn
+
+# LLM & Agent
+langchain
+langgraph
+langchain-anthropic       # or langchain-anthropic if you use Claude
+langsmith
+
+# Vector Database
+pinecone-client
+
+# Document Parsing
+pypdf                   # PDF text extraction
+pandas                  # CSV reading
+
+# Frontend
+streamlit
+requests                # Streamlit → FastAPI HTTP calls
+
+# Utilities
+python-dotenv           # Reads your .env file
+pydantic                # Data validation (used by FastAPI schemas)
