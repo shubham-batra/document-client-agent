@@ -1,35 +1,57 @@
+import os
 import streamlit as st
-import pandas as pd
-from io import StringIO
+import requests
 import time
-import base64
-from backend.utils.file_parser import parse_pdf
+from dotenv import load_dotenv
 
-st.title("This is an AI Document Uploader")
+load_dotenv()
+
+BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
+
+st.title("Document Intelligence Agent")
+
 if "messages" not in st.session_state:
     st.session_state.messages = []
-uploaded_file = st.file_uploader("Choose a File", type="Pdf")
-if uploaded_file is not None:
+
+if "uploaded_filename" not in st.session_state:
+    st.session_state.uploaded_filename = None
+
+# File upload
+uploaded_file = st.file_uploader("Upload a document", type=["pdf", "csv"])
+if uploaded_file is not None and uploaded_file.name != st.session_state.uploaded_filename:
     placeholder = st.empty()
-    placeholder.success("Document Uploaded", icon="✅")
-    placeholder.empty()
-    docs = parse_pdf(uploaded_file)
-    st.success(f"Loaded {len(docs)} pages.")
-    time.sleep(3)
-    placeholder.empty()
+    placeholder.info("Uploading and processing document...")
 
-    # Below code is to display pdf on page, may need to delete later
+    response = requests.post(
+        f"{BACKEND_URL}/upload",
+        files={"file": (uploaded_file.name, uploaded_file.getvalue(), uploaded_file.type)},
+    )
 
-    #b64 = base64.b64encode(uploaded_file.read()).decode("utf-8")
-    #pdf_display = f'<iframe src="data:application/pdf;base64,{b64}" width="700" height="1000" type="application/pdf"></iframe>'
-    #st.markdown(pdf_display, unsafe_allow_html=True)
+    if response.status_code == 200:
+        data = response.json()
+        placeholder.success(f"Document uploaded! {data['chunks_ingested']} chunks indexed.", icon="✅")
+        st.session_state.uploaded_filename = uploaded_file.name
+        time.sleep(3)
+        placeholder.empty()
+    else:
+        placeholder.error("Upload failed. Is the backend running?")
 
-# If messages in list, then write to page
+# Chat history
 for msg in st.session_state.messages:
-    st.write(f"User: {msg['user']}")
-    st.write(f"Assistant: {msg['assistant']}")
-prompt = st.chat_input("Say something")
-if prompt:
-    st.session_state.messages.append({"user": prompt, "assistant": "This is my response"})
+    st.write(f"**You:** {msg['user']}")
+    if msg["assistant"] is None:
+        with st.spinner("Thinking..."):
+            response = requests.post(
+                f"{BACKEND_URL}/chat",
+                json={"message": msg["user"]},
+            )
+            msg["assistant"] = response.json()["response"] if response.status_code == 200 else "Sorry, something went wrong."
+        st.rerun()
+    else:
+        st.write(f"**Assistant:** {msg['assistant']}")
 
-    
+# Chat input
+prompt = st.chat_input("Ask a question about your document")
+if prompt:
+    st.session_state.messages.append({"user": prompt, "assistant": None})
+    st.rerun()

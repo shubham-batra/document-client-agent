@@ -4,12 +4,17 @@ uvicorn
 
 # LLM & Agent
 langchain
+langchain-core
+langchain-community
 langgraph
 langchain-anthropic       # or langchain-anthropic if you use Claude
 langsmith
 
 # Vector Database
-pinecone-client
+pinecone
+
+# Embeddings
+openai
 
 # Document Parsing
 pypdf                   # PDF text extraction
@@ -22,3 +27,4 @@ requests                # Streamlit → FastAPI HTTP calls
 # Utilities
 python-dotenv           # Reads your .env file
 pydantic                # Data validation (used by FastAPI schemas)
+python-multipart        # Required by FastAPI for file upload handling

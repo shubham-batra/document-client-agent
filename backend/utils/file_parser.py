@@ -1,7 +1,20 @@
 import tempfile
 import os
-from langchain_community.document_loaders import PyPDFLoader
+from langchain_community.document_loaders import PyPDFLoader, CSVLoader
 from langchain.schema import Document
+
+
+def parse_csv(uploaded_file) -> list[Document]:
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".csv") as tmp_file:
+        tmp_file.write(uploaded_file.getvalue())
+        tmp_file_path = tmp_file.name
+
+    try:
+        loader = CSVLoader(tmp_file_path)
+        return loader.load()
+    finally:
+        if os.path.exists(tmp_file_path):
+            os.remove(tmp_file_path)
 
 
 def parse_pdf(uploaded_file) -> list[Document]:
