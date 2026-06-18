@@ -24,6 +24,8 @@ def calculator_tool(expression: str) -> str:
 
     def _eval(node):
         if isinstance(node, ast.Constant):
+            if not isinstance(node.value, (int, float)):
+                raise TypeError(f"Only numeric values are allowed, got: {type(node.value).__name__}")
             return node.value
         elif isinstance(node, ast.BinOp):
             return allowed_operators[type(node.op)](_eval(node.left), _eval(node.right))

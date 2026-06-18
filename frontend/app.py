@@ -50,8 +50,12 @@ for msg in st.session_state.messages:
     else:
         st.write(f"**Assistant:** {msg['assistant']}")
 
-# Chat input
-prompt = st.chat_input("Ask a question about your document")
-if prompt:
-    st.session_state.messages.append({"user": prompt, "assistant": None})
-    st.rerun()
+# Chat input — only enabled after a file has been uploaded
+if st.session_state.uploaded_filename is None:
+    st.info("Upload a document above to start asking questions.")
+    st.chat_input("Ask a question about your document", disabled=True)
+else:
+    prompt = st.chat_input("Ask a question about your document")
+    if prompt:
+        st.session_state.messages.append({"user": prompt, "assistant": None})
+        st.rerun()

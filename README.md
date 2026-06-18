@@ -106,15 +106,23 @@ The backend and frontend run as separate processes. Open two terminals:
 
 **Terminal 1 — FastAPI backend:**
 ```bash
-uvicorn backend.main:app --reload
+python3 -m uvicorn backend.main:app --reload
 ```
 
 **Terminal 2 — Streamlit frontend:**
 ```bash
-streamlit run frontend/app.py
+python3 -m streamlit run frontend/app.py
 ```
 
 Then open [http://localhost:8501](http://localhost:8501) in your browser.
+
+### 6. Run the tests
+
+```bash
+pytest tests/ -v
+```
+
+Tests use mocked OpenAI and Pinecone clients — no API calls are made and no costs are incurred. The `-v` flag shows each test name and its result.
 
 ---
 
@@ -172,20 +180,57 @@ Agent traces are logged to [LangSmith](https://smith.langchain.com/) automatical
 
 ## Deployment
 
-The app is configured for deployment on **Azure**. See `docker-compose.yml` for containerized local development. Azure-specific deployment instructions coming soon.
+The app is deployed on **Railway** as two separate services — one for the FastAPI backend and one for the Streamlit frontend.
+
+### Services
+
+| Service | Start command |
+|---|---|
+| Backend | `uvicorn backend.main:app --host 0.0.0.0 --port $PORT` |
+| Frontend | `streamlit run frontend/app.py --server.port $PORT --server.address 0.0.0.0` |
+
+### Environment variables
+
+Set the following in each Railway service's **Variables** tab. Never commit these to the repo — Railway injects them securely at runtime.
+
+**Backend service:**
+```
+OPENAI_API_KEY=
+ANTHROPIC_API_KEY=
+PINECONE_API_KEY=
+PINECONE_INDEX_NAME=
+LANGCHAIN_API_KEY=
+LANGCHAIN_TRACING_V2=true
+LANGCHAIN_PROJECT=document-intelligence-agent
+FRONTEND_URL=https://<your-frontend-service>.up.railway.app
+```
+
+**Frontend service:**
+```
+BACKEND_URL=https://<your-backend-service>.up.railway.app
+```
+
+### Steps to deploy
+
+1. Push the repo to GitHub
+2. Create a new Railway project → **New Service** → Deploy from GitHub repo (do this twice — once for backend, once for frontend)
+3. Set the start command and environment variables for each service
+4. Go to **Settings → Networking → Generate Domain** on the frontend service to get a public URL
 
 ---
 
 ## Roadmap
 
 - [x] Streamlit UI with file upload and chat interface
-- [ ] `file_parser.py` — PDF and CSV loading with `tempfile` support
-- [ ] `pinecone_client.py` — Pinecone index setup and upsert
-- [ ] `ingestor.py` — chunking and embedding pipeline
-- [ ] `retriever.py` — similarity search over uploaded documents
-- [ ] `graph.py` + `tools.py` — LangGraph agent with retrieval and calculation tools
-- [ ] FastAPI backend with `/upload` and `/chat` endpoints
-- [ ] Docker + Azure deployment
+- [x] `file_parser.py` — PDF and CSV loading with `tempfile` support
+- [x] `pinecone_client.py` — Pinecone index setup and upsert
+- [x] `ingestor.py` — chunking and embedding pipeline
+- [x] `retriever.py` — similarity search over uploaded documents
+- [x] `graph.py` + `tools.py` — LangGraph agent with retrieval and calculation tools
+- [x] FastAPI backend with `/upload` and `/chat` endpoints
+- [x] Tests for agent tools, retriever, and ingestor
+- [x] Railway deployment
+- [ ] Docker support for local containerized development
 
 ---
 

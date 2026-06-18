@@ -28,3 +28,7 @@ requests                # Streamlit → FastAPI HTTP calls
 python-dotenv           # Reads your .env file
 pydantic                # Data validation (used by FastAPI schemas)
 python-multipart        # Required by FastAPI for file upload handling
+
+# Testing
+pytest
+pytest-mock
