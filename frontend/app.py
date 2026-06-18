@@ -38,17 +38,20 @@ if uploaded_file is not None and uploaded_file.name != st.session_state.uploaded
 
 # Chat history
 for msg in st.session_state.messages:
-    st.write(f"**You:** {msg['user']}")
+    with st.chat_message("user"):
+        st.write(msg["user"])
     if msg["assistant"] is None:
-        with st.spinner("Thinking..."):
-            response = requests.post(
-                f"{BACKEND_URL}/chat",
-                json={"message": msg["user"]},
-            )
-            msg["assistant"] = response.json()["response"] if response.status_code == 200 else "Sorry, something went wrong."
+        with st.chat_message("assistant"):
+            with st.spinner("Thinking..."):
+                response = requests.post(
+                    f"{BACKEND_URL}/chat",
+                    json={"message": msg["user"]},
+                )
+                msg["assistant"] = response.json()["response"] if response.status_code == 200 else "Sorry, something went wrong."
         st.rerun()
     else:
-        st.write(f"**Assistant:** {msg['assistant']}")
+        with st.chat_message("assistant"):
+            st.write(msg["assistant"])
 
 # Chat input — only enabled after a file has been uploaded
 if st.session_state.uploaded_filename is None:
