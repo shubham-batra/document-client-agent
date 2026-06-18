@@ -8,6 +8,7 @@ langchain-core
 langchain-community
 langgraph
 langchain-anthropic       # or langchain-anthropic if you use Claude
+langchain-openai          # LangChain wrapper for OpenAI — enables LangSmith tracing of embeddings
 langsmith
 
 # Vector Database

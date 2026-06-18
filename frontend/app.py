@@ -33,6 +33,8 @@ if uploaded_file is not None and uploaded_file.name != st.session_state.uploaded
         st.session_state.uploaded_filename = uploaded_file.name
         time.sleep(3)
         placeholder.empty()
+        if data.get("warning"):
+            st.warning(data["warning"], icon="⚠️")
     else:
         placeholder.error("Upload failed. Is the backend running?")
 

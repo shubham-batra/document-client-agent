@@ -38,8 +38,13 @@ async def upload_file(file: UploadFile = File(...)):
     else:
         documents = parse_pdf(wrapped)
 
+    total_text = " ".join(doc.page_content for doc in documents)
+    warning = None
+    if len(total_text.strip()) < 200:
+        warning = "This document appears to be image-based. Text could not be extracted, so questions about its content may not be answerable."
+
     chunks = ingest_documents(documents)
-    return UploadResponse(message="File uploaded and ingested successfully", chunks_ingested=chunks)
+    return UploadResponse(message="File uploaded and ingested successfully", chunks_ingested=chunks, warning=warning)
 
 
 @app.post("/chat", response_model=ChatResponse)

@@ -1,6 +1,5 @@
-import os
 import uuid
-from openai import OpenAI
+from langchain_openai import OpenAIEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.schema import Document
 from backend.db.pinecone_client import get_pinecone_index
@@ -8,15 +7,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+_embeddings = OpenAIEmbeddings(model="text-embedding-ada-002")
 
 
 def _embed(texts: list[str]) -> list[list[float]]:
-    response = openai_client.embeddings.create(
-        model="text-embedding-ada-002",
-        input=texts,
-    )
-    return [item.embedding for item in response.data]
+    return _embeddings.embed_documents(texts)
 
 
 def ingest_documents(documents: list[Document]) -> int:
